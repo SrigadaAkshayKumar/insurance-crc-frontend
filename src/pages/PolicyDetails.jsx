@@ -1,39 +1,26 @@
 import Header from "../components/Header";
 import Sidebar from "../layout/Sidebar";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+// ✅ Import frontend JSON (ARRAY)
+import policies from "../data/user-policies.json";
 
 const PolicyDetails = () => {
   const { id } = useParams();
-  const [policy, setPolicy] = useState(null);
-  const [error, setError] = useState("");
+
+  // ✅ Find policy from JSON
+  const policy = policies.find((p) => p.id === Number(id));
+
   const [purchased, setPurchased] = useState(false);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/policies/details/${id}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Policy not found");
-        }
-        return res.json();
-      })
-      .then((data) => setPolicy(data))
-      .catch((err) => setError(err.message));
-  }, [id]);
-
-  if (error) {
-    return <p className="p-8 text-red-600">{error}</p>;
-  }
-
   if (!policy) {
-    return <p className="p-8">Loading policy details...</p>;
+    return <p className="p-8 text-red-600">Policy not found</p>;
   }
 
-  // 🔹 Premium calculation
+  // 🔹 Premium calculation (JSON-friendly)
   const calculatePremium = () => {
-    const coverageValue = Number(policy.coverage_amount.replace(/,/g, ""));
+    const coverageValue = Number(policy.coverage_amount) || 0;
 
     let premium = coverageValue * 0.01;
 
@@ -46,7 +33,7 @@ const PolicyDetails = () => {
     return Math.round(premium);
   };
 
-  // 🔹 Buy plan
+  // 🔹 Buy plan (demo)
   const handleBuyPlan = () => {
     setPurchased(true);
     alert("✅ Policy purchased successfully!");
@@ -57,15 +44,13 @@ const PolicyDetails = () => {
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Right side (Header + Content) */}
+      {/* Right side */}
       <div className="flex-1">
         <Header />
 
         <div className="p-8">
           <h1 className="text-2xl font-semibold mb-2">Policy Details</h1>
-          <p className="text-gray-500 mb-6">
-            Home / My Policies / Policy Details
-          </p>
+          <p className="text-gray-500 mb-6">Home / Policies / Policy Details</p>
 
           <div className="grid grid-cols-2 gap-6">
             {/* Left Top */}
@@ -95,7 +80,7 @@ const PolicyDetails = () => {
                 <span>{policy.policy_type}</span>
 
                 <span>Coverage Amount</span>
-                <span>{policy.coverage_amount}</span>
+                <span>₹ {policy.coverage_amount.toLocaleString()}</span>
               </div>
             </div>
 
@@ -107,7 +92,7 @@ const PolicyDetails = () => {
 
               <div className="grid grid-cols-2 gap-y-2 text-gray-700">
                 <span>Hospital Cover</span>
-                <span>{policy.coverage_amount}</span>
+                <span>₹ {policy.coverage_amount.toLocaleString()}</span>
 
                 <span>Accidental Cover</span>
                 <span>Included</span>
@@ -155,4 +140,5 @@ const PolicyDetails = () => {
     </div>
   );
 };
+
 export default PolicyDetails;

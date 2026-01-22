@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
 
-
 import Sidebar from "../layout/Sidebar";
 import Navbar from "../layout/Navbar";
 import PageContainer from "../layout/PageContainer";
 import StatCard from "../components/Dashboard/StatCard";
-
 
 import PolicyCard from "../components/Dashboard/PolicyCard";
 import RecommendationCard from "../components/Dashboard/RecommendationCard";
 import ClaimsChart from "../components/Dashboard/ClaimsChart";
 import RecentClaimsTable from "../components/Dashboard/RecentClaimsTable";
 
-
 import {
   getDashboardSummary,
   getUserPolicies,
   getRecommendations,
   getClaimsOverview,
-} from "../features/authentication/dashboard/services/dashboardApi";
+} from "../features/services/dashboardApi";
 
 const Dashboard = () => {
-
   const [summary, setSummary] = useState({
     active_policies: 0,
     pending_claims: 0,
@@ -42,7 +38,6 @@ const Dashboard = () => {
 
   const [loading, setLoading] = useState(true);
 
- 
   useEffect(() => {
     const loadDashboard = async () => {
       try {
@@ -73,12 +68,10 @@ const Dashboard = () => {
     );
   }
 
-  
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
 
-     
       <div className="flex-1 flex flex-col">
         <Navbar />
 
@@ -106,55 +99,40 @@ const Dashboard = () => {
             />
             <StatCard
               title="Total Premium"
-              value={`$${summary.total_premium}`}
+              value={`₹${summary.total_premium}`}
               subtitle="Annual coverage"
             />
           </div>
 
-        
+          {/* My Policies */}
           <section className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">
-              My Policies
-            </h2>
+            <h2 className="text-xl font-semibold mb-4">My Policies</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {policies.map((policy) => (
-                <PolicyCard
-                  key={policy.policy_no}
-                  policy={policy}
-                />
+                <PolicyCard key={policy.policy_no} policy={policy} />
               ))}
             </div>
           </section>
 
+          {/* Recommendations */}
           <section className="mb-10">
-            <h2 className="text-xl font-semibold mb-4">
-              Recommendations
-            </h2>
+            <h2 className="text-xl font-semibold mb-4">Recommendations</h2>
 
             <div className="space-y-4">
               {recommendations.map((item) => (
-                <RecommendationCard
-                  key={item.id}
-                  data={item}
-                />
+                <RecommendationCard key={item.id} data={item} />
               ))}
             </div>
           </section>
 
-          
+          {/* Claims */}
           <section>
-            <h2 className="text-xl font-semibold mb-4">
-              Claims Overview
-            </h2>
+            <h2 className="text-xl font-semibold mb-4">Claims Overview</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ClaimsChart
-                data={claimsData.status_breakdown}
-              />
-              <RecentClaimsTable
-                claims={claimsData.recent_claims}
-              />
+              <ClaimsChart data={claimsData.status_breakdown} />
+              <RecentClaimsTable claims={claimsData.recent_claims} />
             </div>
           </section>
         </PageContainer>

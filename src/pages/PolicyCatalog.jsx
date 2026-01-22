@@ -1,39 +1,40 @@
-import { useEffect, useState } from "react";
-import Sidebar from "../layout/Sidebar"; // default export
+import { useState } from "react";
+import Sidebar from "../layout/Sidebar";
 import Header from "../components/Header";
 import PolicyFilter from "../features/policies/components/PolicyFilter";
 import { useNavigate, Link } from "react-router-dom";
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+// ✅ Import frontend JSON data
+import policiesData from "../data//user-policies.json";
 
 const PolicyCatalog = () => {
   const navigate = useNavigate();
-  const [policies, setPolicies] = useState([]);
-  const [policyTypes, setPolicyTypes] = useState([]);
-  const [ranges, setRanges] = useState([]);
-  const [filters, setFilters] = useState({ search: "", type: "", range: null });
+
+  // ✅ Policies from JSON
+  const [policies] = useState(policiesData);
+
+  // ✅ Derived filter data (no backend)
+  const policyTypes = [...new Set(policiesData.map((p) => p.policy_type))];
+
+  const ranges = [
+    { label: "Below ₹5L", min: 0, max: 500000 },
+    { label: "₹5L - ₹10L", min: 500001, max: 1000000 },
+    { label: "Above ₹10L", min: 1000001, max: 5000000 },
+  ];
+
+  const [filters, setFilters] = useState({
+    search: "",
+    type: "",
+    range: null,
+  });
 
   const [compareList, setCompareList] = useState([]);
   const [compareOpen, setCompareOpen] = useState(false);
   const [messages, setMessages] = useState({});
 
-  useEffect(() => {
-    if (!BASE_URL) return console.error("❌ BASE_URL is undefined.");
-
-    fetch(`${BASE_URL}/policies`)
-      .then((res) => res.json())
-      .then((data) => Array.isArray(data) && setPolicies(data))
-      .catch(console.error);
-
-    fetch(`${BASE_URL}/policies/filters`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPolicyTypes(data.types || []);
-        setRanges(data.ranges || []);
-      })
-      .catch(console.error);
-  }, []);
-
+  // =========================
+  // FILTER LOGIC
+  // =========================
   const filteredPolicies = policies.filter((policy) => {
     const matchesSearch = policy.title
       ?.toLowerCase()
@@ -41,8 +42,7 @@ const PolicyCatalog = () => {
 
     const matchesType = !filters.type || policy.policy_type === filters.type;
 
-    const coverageAmount =
-      Number(policy.coverage_amount?.replace(/,/g, "")) || 0;
+    const coverageAmount = Number(policy.coverage_amount) || 0;
 
     let matchesRange = true;
     if (filters.range) {
@@ -54,19 +54,28 @@ const PolicyCatalog = () => {
     return matchesSearch && matchesType && matchesRange;
   });
 
+  // =========================
+  // COMPARE LOGIC
+  // =========================
   const handleCompareClick = (policy) => {
     const exists = compareList.find((p) => p.id === policy.id);
+
     if (exists) {
       setCompareList(compareList.filter((p) => p.id !== policy.id));
       return;
     }
+
     if (compareList.length >= 3) {
       alert("You can compare at most 3 policies.");
       return;
     }
 
     setCompareList([...compareList, policy]);
-    setMessages((prev) => ({ ...prev, [policy.id]: "Added to compare" }));
+    setMessages((prev) => ({
+      ...prev,
+      [policy.id]: "Added to compare",
+    }));
+
     setTimeout(() => {
       setMessages((prev) => ({ ...prev, [policy.id]: null }));
     }, 2000);
@@ -77,11 +86,15 @@ const PolicyCatalog = () => {
       alert("Select at least 2 policies to compare.");
       return;
     }
+
     navigate("/compare", {
       state: { selectedPolicies: compareList, from: "/policies" },
     });
   };
 
+  // =========================
+  // UI
+  // =========================
   return (
     <div className="flex min-h-screen bg-[#0D99FF]">
       <Sidebar />
@@ -150,6 +163,7 @@ const PolicyCatalog = () => {
           </div>
         </div>
       </div>
+
       {/* Compare widget */}
       {compareList.length > 0 && (
         <div
@@ -160,8 +174,7 @@ const PolicyCatalog = () => {
             className="flex justify-between cursor-pointer font-semibold"
             onClick={() => setCompareOpen(!compareOpen)}
           >
-            Compare ({compareList.length}){" "}
-            <span>{compareOpen ? "▼" : "▲"}</span>
+            Compare ({compareList.length})<span>{compareOpen ? "▼" : "▲"}</span>
           </div>
 
           {compareOpen && (
@@ -176,10 +189,10 @@ const PolicyCatalog = () => {
                     <button
                       onClick={() =>
                         setCompareList(
-                          compareList.filter((p) => p.id !== policy.id)
+                          compareList.filter((p) => p.id !== policy.id),
                         )
                       }
-                      className="text-red-500 text-xs cursor-pointer bg-transparent border-none"
+                      className="text-red-500 text-xs bg-transparent border-none"
                     >
                       Remove
                     </button>

@@ -76,7 +76,7 @@ const AdminDashboard = () => {
 
         <div className="space-y-2 text-sm">
           <div className="px-3 py-2 rounded-lg opacity-90 hover:bg-white/20 cursor-pointer">
-            Admin Overview
+            Dashboard
           </div>
           <div className="px-3 py-2 rounded-lg bg-white/20 cursor-pointer">
             Claims Management

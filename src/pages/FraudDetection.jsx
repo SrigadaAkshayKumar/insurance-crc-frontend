@@ -2,21 +2,32 @@ import Header from "../layout/Navbar";
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
+// ✅ Import frontend JSON data
+import fraudClaimsData from "../data/claim_report.json";
+
+// ✅ ADD THIS (fraud calculation logic)
+import { calculateFraudWithRules } from "../utils/fraudEngine";
+
 export default function FraudDetection() {
   const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // ✅ Load from frontend JSON instead of backend
   useEffect(() => {
-    const BASE_URL = process.env.REACT_APP_API_BASE_URL;
+    // 🔹 CALCULATE fraud score + risk (backend equivalent)
+    const analyzedClaims = fraudClaimsData.map((claim) => {
+      const fraud = calculateFraudWithRules(claim);
 
-    fetch(`${BASE_URL}/fraud/claims`)
-      .then((res) => res.json())
-      .then((data) => {
-        setClaims(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      return {
+        ...claim,
+        fraud_score: fraud.fraud_score,
+        risk: fraud.risk,
+      };
+    });
+
+    setClaims(analyzedClaims);
+    setLoading(false);
   }, []);
 
   const riskColor = {
@@ -33,9 +44,11 @@ export default function FraudDetection() {
         </div>
 
         <div className="space-y-2 text-sm">
-          <div className="px-3 py-2 rounded-lg opacity-90 hover:bg-white/20 cursor-pointer">
-            Admin Overview
-          </div>
+          <Link to="/AdminDashboard">
+            <div className="px-3 py-2 rounded-lg opacity-90 hover:bg-white/20 cursor-pointer">
+              Dashboard
+            </div>
+          </Link>
           <div className="px-3 py-2 rounded-lg bg-white/20 cursor-pointer">
             Claims Management
           </div>
