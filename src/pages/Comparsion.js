@@ -25,7 +25,7 @@ export function ComparePage() {
     setSelectedPolicies(updated);
 
     if (updated.length < 2) {
-      navigate("/", {
+      navigate("/policycatalog", {
         replace: true,
         state: { message: "Please select at least 2 policies to compare" },
       });
