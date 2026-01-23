@@ -2,6 +2,17 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "./services/api";
 
+const DEMO_USERS = {
+  "user@gmail.com": {
+    password: "user123",
+    role: "user",
+  },
+  "admin@gmail.com": {
+    password: "admin123",
+    role: "admin",
+  },
+};
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,14 +21,32 @@ export default function Login() {
   const submit = async (e) => {
     e.preventDefault();
 
+    const demoUser = DEMO_USERS[email];
+
+    if (demoUser && demoUser.password === password) {
+      // fake token for demo
+      localStorage.setItem("access_token", "demo-token");
+      localStorage.setItem("role", demoUser.role);
+
+      alert("login successful");
+
+      if (demoUser.role === "admin") {
+        navigate("/AdminDashboard");
+      } else {
+        navigate("/dashboard");
+      }
+      return;
+    }
+
     try {
       const res = await api.post("/auth/login", { email, password });
       const { access_token, role } = res.data;
+
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("role", role);
+
       alert("Login successful");
 
-      // ROLE BASED REDIRECT
       if (role === "admin") {
         navigate("/AdminDashboard");
       } else {
@@ -45,6 +74,7 @@ export default function Login() {
           className="bg-[#fff5f5] rounded-xl shadow-lg w-[400px] p-8"
         >
           <h2 className="text-3xl font-bold text-center mb-6">Login</h2>
+
           <div className="mb-4">
             <label className="block text-sm mb-1 text-gray-700">Email</label>
             <input
@@ -54,6 +84,7 @@ export default function Login() {
               required
             />
           </div>
+
           <div className="mb-2">
             <label className="block text-sm mb-1 text-gray-700">Password</label>
             <input
@@ -63,17 +94,20 @@ export default function Login() {
               required
             />
           </div>
+
           <div className="text-right mb-5">
             <Link to="/forgot-password" className="text-sm text-blue-600">
               Forgot Password?
             </Link>
           </div>
+
           <button
             type="submit"
             className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-semibold"
           >
             Continue
           </button>
+
           <p className="text-center text-sm mt-5">
             New User?{" "}
             <Link to="/register" className="text-blue-600 font-semibold">
