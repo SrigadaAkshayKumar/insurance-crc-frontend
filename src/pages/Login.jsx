@@ -24,7 +24,6 @@ export default function Login() {
     const demoUser = DEMO_USERS[email];
 
     if (demoUser && demoUser.password === password) {
-      // fake token for demo
       localStorage.setItem("access_token", "demo-token");
       localStorage.setItem("role", demoUser.role);
 
